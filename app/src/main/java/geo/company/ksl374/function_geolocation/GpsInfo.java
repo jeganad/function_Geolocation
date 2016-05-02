@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Created by 4sizn on 2016. 5. 1..
@@ -20,7 +21,7 @@ public class GpsInfo extends Service implements LocationListener {
     private final Context mContext;
 
     //gps_allow_distance
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATE = 10;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
 
     //check the update gps in time
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
@@ -30,8 +31,8 @@ public class GpsInfo extends Service implements LocationListener {
 
     protected  LocationManager locationManager;
 
-    private double gps_latitude;
-    private double gps_longitude;
+    public double gps_latitude;
+    public double gps_longitude;
    /* private double netwrok_latitude;
     private double network_logitude;
     private double best_latitude;
@@ -46,20 +47,50 @@ public class GpsInfo extends Service implements LocationListener {
 
     public Location getLocation()
     {
-        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        try {
+            locationManager = (LocationManager)mContext.getSystemService(LOCATION_SERVICE);
+            if (checkLocation()) {
+                Log.d("123", "locationManager is passed");
+                if (isGPSEnabled()) {
+                    if(location == null) // 처음 접근하면
+                    {
+                        Log.d("123", "location first start");
+                        locationManager.requestLocationUpdates(
+                                LocationManager.PASSIVE_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        if (locationManager != null) {
+                            Log.d("123", String.valueOf(LocationManager.GPS_PROVIDER));
+                            location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                            Log.d("123", String.valueOf(location));
+                        }
+                        if (location != null) {
+                            Log.d("123", "Latitude is "+ location.getLatitude());
+                            gps_latitude = location.getLatitude();
+                            gps_longitude = location.getLongitude();
+                        }
+                }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
         return location;
     }
 
     public boolean checkLocation(){
-        if(!isLocationEnabled())
+        if(!isGPSEnabled() && !isNetWorkEnabled())
             showAlert();
-        return isLocationEnabled();
+        return isGPSEnabled();
     }
 
-    private boolean isLocationEnabled(){
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+    private boolean isGPSEnabled(){
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    private boolean isNetWorkEnabled(){
+        return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
     private void showAlert(){
