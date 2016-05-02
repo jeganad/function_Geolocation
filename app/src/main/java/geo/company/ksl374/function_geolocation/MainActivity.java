@@ -83,15 +83,32 @@ public class MainActivity extends AppCompatActivity {
     {
         Log.d("123", "123");
         gps = new GpsInfo(this);
-     if(!gps.checkLocation())
+     if(!gps.checkNetworkState())
         return;
         else{
           latitudeGPS= gps.getGps_latitude();
          longitudeGPS = gps.getGps_longitude();
-
          latitudeValueGPS.setText(String.valueOf(latitudeGPS));
          longitudeValueGPS.setText(String.valueOf(longitudeGPS));
          Toast.makeText(getApplicationContext(), "Gps신호가 업데이트 되었습니다\n",Toast.LENGTH_LONG).show();
      }
+    }
+
+    public void toggleNetworkUpdates(View view)
+    {
+        Log.d("123", "NetworkListener");
+        gps = new GpsInfo(this);
+        if(!gps.checkNetworkState())
+            return;
+        else
+        {
+            latitudeNetwork = gps.getNetwork_latitude();
+            longitudeNetwork = gps.getNetwork_longitude();
+
+            latitudeValueNetwork.setText(String.valueOf(latitudeNetwork));
+            longitudeValueNetwork.setText(String.valueOf(longitudeNetwork));
+            Toast.makeText(getApplicationContext(), "Network 신호가 업데이트 되었습니다\n",Toast.LENGTH_LONG).show();
+
+        }
     }
 }

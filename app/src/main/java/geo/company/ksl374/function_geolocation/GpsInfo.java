@@ -31,11 +31,12 @@ public class GpsInfo extends Service implements LocationListener {
 
     protected  LocationManager locationManager;
 
-    public double gps_latitude;
-    public double gps_longitude;
-   /* private double netwrok_latitude;
-    private double network_logitude;
-    private double best_latitude;
+    private double gps_latitude;
+    private double gps_longitude;
+
+    private double netwrok_latitude;
+    private double network_longitude;
+    /*private double best_latitude;
     private double best_longigude;*/
     Location location;
 
@@ -49,7 +50,7 @@ public class GpsInfo extends Service implements LocationListener {
     {
         try {
             locationManager = (LocationManager)mContext.getSystemService(LOCATION_SERVICE);
-            if (checkLocation()) {
+            if (checkNetworkState()) {
                 Log.d("123", "locationManager is passed");
                 if (isGPSEnabled()) {
                     if(location == null) // 처음 접근하면
@@ -66,10 +67,29 @@ public class GpsInfo extends Service implements LocationListener {
                         }
                         if (location != null) {
                             Log.d("123", "Latitude is "+ location.getLatitude());
-                            gps_latitude = location.getLatitude();
-                            gps_longitude = location.getLongitude();
+                            setGps_latitude(location.getLatitude());
+                            setGps_longitude(location.getLongitude());
                         }
                 }
+
+                    if(isNetWorkEnabled())
+                    {
+                        Log.d("123", "network first start");
+                        locationManager.requestLocationUpdates(
+                            LocationManager.PASSIVE_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        if(locationManager!=null)
+                        {
+                            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                                    if(location != null)
+                                    {
+                                        setNetwrok_latitude(location.getLatitude());
+                                        setNetwork_longitude(location.getLongitude());
+                                    }
+
+                        }
+                    }
                 }
             }
         }catch(Exception e){
@@ -79,7 +99,7 @@ public class GpsInfo extends Service implements LocationListener {
         return location;
     }
 
-    public boolean checkLocation(){
+    public boolean checkNetworkState(){
         if(!isGPSEnabled() && !isNetWorkEnabled())
             showAlert();
         return isGPSEnabled();
@@ -152,5 +172,23 @@ public class GpsInfo extends Service implements LocationListener {
     {
         gps_longitude = longitude;
     }
+    public double getNetwork_latitude()
+    {
+        return netwrok_latitude;
+    }
+    public double getNetwork_longitude()
+    {
+        return network_longitude;
+    }
+    public void setNetwrok_latitude(double latitude)
+    {
+        netwrok_latitude = latitude;
+    }
+    public void setNetwork_longitude(double longitude)
+    {
+        network_longitude = longitude;
+    }
+
+
 }
 
