@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,18 +27,14 @@ public class GpsInfo extends Service implements LocationListener {
     //check the update gps in time
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
 
-    boolean isGPSEnabled = false;
-    boolean isNetWorkEnabled = false;
-
     protected  LocationManager locationManager;
 
     private double gps_latitude;
     private double gps_longitude;
-
     private double netwrok_latitude;
     private double network_longitude;
-    /*private double best_latitude;
-    private double best_longigude;*/
+    private double best_latitude;
+    private double best_longigude;
     Location location;
 
 
@@ -50,10 +47,12 @@ public class GpsInfo extends Service implements LocationListener {
     {
         try {
             locationManager = (LocationManager)mContext.getSystemService(LOCATION_SERVICE);
+
+            Log.d("123", String.valueOf(isNetWorkEnabled()) + "  ");
+            Log.d("123", String.valueOf(isGPSEnabled()) + "  ");
             if (checkNetworkState()) {
-                Log.d("123", "locationManager is passed");
                 if (isGPSEnabled()) {
-                    if(location == null) // 처음 접근하면
+                    if (location == null) // 처음 접근하면
                     {
                         Log.d("123", "location first start");
                         locationManager.requestLocationUpdates(
@@ -66,31 +65,55 @@ public class GpsInfo extends Service implements LocationListener {
                             Log.d("123", String.valueOf(location));
                         }
                         if (location != null) {
-                            Log.d("123", "Latitude is "+ location.getLatitude());
+                            Log.d("123", "Latitude is " + location.getLatitude());
                             setGps_latitude(location.getLatitude());
                             setGps_longitude(location.getLongitude());
                         }
-                }
-
-                    if(isNetWorkEnabled())
-                    {
-                        Log.d("123", "network first start");
-                        locationManager.requestLocationUpdates(
-                            LocationManager.PASSIVE_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        if(locationManager!=null)
-                        {
-                            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                                    if(location != null)
-                                    {
-                                        setNetwrok_latitude(location.getLatitude());
-                                        setNetwork_longitude(location.getLongitude());
-                                    }
-
-                        }
                     }
                 }
+                if(isNetWorkEnabled()) {
+                    Log.d("123", "network first start");
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                    if(locationManager!=null)
+                    {
+                        location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        if(location != null)
+                        {
+                            setNetwrok_latitude(location.getLatitude());
+                            setNetwork_longitude(location.getLongitude());
+                        }
+
+                    }
+                }
+
+                //criteria...
+                Criteria criteria = new Criteria();
+                criteria.setAccuracy(Criteria.ACCURACY_FINE);
+                    criteria.setAltitudeRequired(false);
+                    criteria.setBearingRequired(false);
+                    criteria.setCostAllowed(true);
+                    criteria.setPowerRequirement(Criteria.ACCURACY_LOW);
+                    String provider = locationManager.getBestProvider(criteria, true);
+                    if(provider != null){
+                        Log.d("123", "privider passed");
+                        locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        if(locationManager!=null)
+                        {
+                            Log.d("123", "best locationmansger passed");
+                            location = locationManager.getLastKnownLocation(provider);
+                            Log.d("123", String.valueOf(location));
+                            if(location !=null) {
+
+                                Log.d("123", "best location passed");
+                                //setBest_latitude(location.getLatitude());
+                                //setBest_longigude(location.getLongitude());
+                            }
+                        }
+                        
+                    }
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -100,16 +123,16 @@ public class GpsInfo extends Service implements LocationListener {
     }
 
     public boolean checkNetworkState(){
-        if(!isGPSEnabled() && !isNetWorkEnabled())
+        if((!isGPSEnabled()) || (!isNetWorkEnabled()))
             showAlert();
         return isGPSEnabled();
     }
 
-    private boolean isGPSEnabled(){
+    public boolean isGPSEnabled(){
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    private boolean isNetWorkEnabled(){
+    public boolean isNetWorkEnabled(){
         return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
@@ -188,7 +211,22 @@ public class GpsInfo extends Service implements LocationListener {
     {
         network_longitude = longitude;
     }
+    public double getBest_latitude()
+    {
+        return best_latitude;
+    }
+    public void setBest_latitude(double latitude)
+    {
+        best_latitude = latitude;
+    }
 
-
+    public double getBest_longitude()
+    {
+        return best_longigude;
+    }
+    public void setBest_longigude(double longigude)
+    {
+        best_longigude = longigude;
+    }
 }
 

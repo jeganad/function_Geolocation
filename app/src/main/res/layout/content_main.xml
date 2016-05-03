@@ -208,6 +208,5 @@
         android:layout_centerHorizontal="true"
         android:text="Address"
         android:textSize="20sp"/>
-
     </RelativeLayout>
 </ScrollView>

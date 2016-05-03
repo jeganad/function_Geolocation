@@ -21,15 +21,18 @@ import static android.util.Log.*;
 
 public class MainActivity extends AppCompatActivity {
 
-    double longitudeBest, latitudeBest;
-    double longitudeGPS, latitudeGPS;
-    double longitudeNetwork, latitudeNetwork;
+    public double longitudeBest, latitudeBest;
+    public double longitudeGPS, latitudeGPS;
+    public double longitudeNetwork, latitudeNetwork;
     TextView longitudeValueBest, latitudeValueBest;
     TextView longitudeValueGPS, latitudeValueGPS;
     TextView longitudeValueNetwork, latitudeValueNetwork;
+    TextView addressValue;
 
     //gps tracker class
     public GpsInfo gps;
+    public GpsToAddress gpstoadress;
+    String address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +46,9 @@ public class MainActivity extends AppCompatActivity {
         longitudeValueGPS = (TextView) findViewById(R.id.longitudeValueGPS);
         latitudeValueGPS = (TextView) findViewById(R.id.latitudeValueGPS);
         longitudeValueNetwork = (TextView) findViewById(R.id.longitudeValueNetwork);
+        longitudeValueNetwork = (TextView) findViewById(R.id.longitudeValueNetwork);
         latitudeValueNetwork = (TextView) findViewById(R.id.latitudeValueNetwork);
-
+        addressValue = (TextView) findViewById(R.id.addressText);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -79,17 +83,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void toggleGPSUpdates(View view)
-    {
+    public void toggleGPSUpdates(View view) throws Exception {
         Log.d("123", "123");
         gps = new GpsInfo(this);
-     if(!gps.checkNetworkState())
+     if(!gps.isGPSEnabled())
         return;
         else{
           latitudeGPS= gps.getGps_latitude();
          longitudeGPS = gps.getGps_longitude();
          latitudeValueGPS.setText(String.valueOf(latitudeGPS));
          longitudeValueGPS.setText(String.valueOf(longitudeGPS));
+
+//         gpstoadress = new GpsToAddress(this, latitudeGPS, longitudeGPS);
+  //          address = gpstoadress.getAddress();
          Toast.makeText(getApplicationContext(), "Gps신호가 업데이트 되었습니다\n",Toast.LENGTH_LONG).show();
      }
     }
@@ -98,16 +104,33 @@ public class MainActivity extends AppCompatActivity {
     {
         Log.d("123", "NetworkListener");
         gps = new GpsInfo(this);
-        if(!gps.checkNetworkState())
+        if(!gps.isNetWorkEnabled()){
+            Toast.makeText(getApplicationContext(), "Network 신호가 잡히질 않습니다\n",Toast.LENGTH_LONG).show();
             return;
+        }
         else
         {
             latitudeNetwork = gps.getNetwork_latitude();
             longitudeNetwork = gps.getNetwork_longitude();
-
             latitudeValueNetwork.setText(String.valueOf(latitudeNetwork));
             longitudeValueNetwork.setText(String.valueOf(longitudeNetwork));
+
             Toast.makeText(getApplicationContext(), "Network 신호가 업데이트 되었습니다\n",Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void toggleBestUpdates(View view)
+    {
+        Log.d("123", "BestupdateListener");
+        gps = new GpsInfo(this);
+        if(!gps.isGPSEnabled())
+            return;
+        else{
+            latitudeBest =  gps.getBest_latitude();
+            longitudeBest = gps.getBest_longitude();
+            latitudeValueBest.setText(String.valueOf(latitudeBest));
+            longitudeValueBest.setText(String.valueOf(longitudeBest));
+            Toast.makeText(getApplicationContext(), "Best 신호가 업데이트 되었습니다\n",Toast.LENGTH_LONG).show();
 
         }
     }
